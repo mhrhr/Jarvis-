@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice-Controlled Assistant</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .center-circle {
+      width: 200px;
+      height: 200px;
+      background: #0ff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px #0ff;
+      animation: glow 1.5s infinite;
+    }
+
+    .center-circle span {
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px #0ff, 0 0 40px #0ff, 0 0 60px #0ff; }
+      50% { box-shadow: 0 0 30px #0ff, 0 0 60px #0ff, 0 0 90px #0ff; }
+    }
+
+    .log {
+      margin-top: 20px;
+      width: 90%;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #0ff;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .help {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="center-circle" id="voice-circle">
+      <span>VICKEY</span>
+    </div>
+    <div class="log" id="log"></div>
+    <div class="help">
+      <h3>Commands You Can Use:</h3>
+      <ul>
+        <li>"Hello" or "Hey" - Greets you</li>
+        <li>"Who are you" - Learn about the assistant</li>
+        <li>"Open [website]" - Opens a website</li>
+        <li>"Time" - Tells the current time</li>
+        <li>"Date" - Tells today's date</li>
+        <li>"Play [song name]" - Plays a song on YouTube</li>
+        <li>"Discuss [topic]" - Discusses predefined topics</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Predefined topics for discussion
+    const topics = {
+      "ai": "Artificial Intelligence involves creating systems that simulate human intelligence. It includes machine learning, robotics, and natural language processing.",
+      "climate change": "Climate change results from human activities like deforestation and fossil fuel consumption. It causes rising temperatures and sea levels.",
+      "space exploration": "Space exploration helps us understand the universe. Key achievements include moon landings, Mars rovers, and satellite technology.",
+      "technology": "Technology drives innovation in various fields, from healthcare and education to AI and renewable energy.",
+      "future of work": "The future of work includes remote work, automation, and AI, reshaping industries and requiring new skills.",
+      "computer programming": "Programming is the process of creating software. Languages like Python, Java, and C++ power applications and AI.",
+      "robotics": "Robotics combines engineering and AI to create machines that assist in manufacturing, healthcare, and more.",
+      "health": "Health involves physical, mental, and social well-being. Trends include telemedicine, personalized medicine, and health apps.",
+      "renewable energy": "Renewable energy sources like solar and wind reduce reliance on fossil fuels and combat climate change.",
+      "education": "Education is evolving with online learning, AI tutors, and personalized approaches to meet diverse learning needs."
+    };
+
+    // Speak text
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.lang = "en-GB";
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Speech recognition setup
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = true; // Keep listening for input
+    recognition.interimResults = false; // Final results only
+
+    // Process user commands
+    function processCommand(command) {
+      document.getElementById("log").innerText = `Command: ${command}`;
+      if (command.includes("hello") || command.includes("hey")) {
+        speak("Hello! How can I assist you?");
+      } else if (command.includes("who are you")) {
+        speak("I am your virtual assistant.");
+      } else if (command.includes("open")) {
+        const site = command.replace("open", "").trim();
+        openWebsite(site);
+      } else if (command.includes("time")) {
+        const time = new Date().toLocaleTimeString();
+        speak("The time is " + time);
+      } else if (command.includes("date")) {
+        const date = new Date().toLocaleDateString();
+        speak("Today's date is " + date);
+      } else if (command.startsWith("play")) {
+        const song = command.replace("play", "").trim();
+        playSong(song);
+      } else if (command.startsWith("discuss")) {
+        const topic = command.replace("discuss", "").trim();
+        discussTopic(topic);
+      } else {
+        speak("Searching the web...");
+        window.open(`https://www.google.com/search?q=${command}`, "_blank");
+      }
+    }
+
+    // Open websites
+    function openWebsite(site) {
+      if (site.includes("youtube")) {
+        speak("Opening YouTube...");
+        window.open("https://youtube.com", "_blank");
+      } else if (site.includes("google")) {
+        speak("Opening Google...");
+        window.open("https://google.com", "_blank");
+      } else {
+        speak(`Searching for ${site}`);
+        window.open(`https://www.google.com/search?q=${site}`, "_blank");
+      }
+    }
+
+    // Play songs
+    function playSong(song) {
+      if (song) {
+        speak(`Playing ${song} on YouTube...`);
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(song)}`, "_blank");
+      } else {
+        speak("Please specify a song to play.");
+      }
+    }
+
+    // Discuss topics
+    function discussTopic(topic) {
+      if (topics[topic]) {
+        speak(topics[topic]);
+      } else {
+        speak(`I don't have predefined information on ${topic}. Searching online.`);
+        window.open(`https://www.google.com/search?q=${topic}`, "_blank");
+      }
+    }
+
+    // Start recognition automatically
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+      processCommand(transcript);
+    };
+
+    recognition.onend = () => {
+      recognition.start(); // Restart listening
+    };
+
+    recognition.onerror = (error) => {
+      console.error("Error occurred in recognition: ", error);
+      recognition.start(); // Restart listening on error
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      recognition.start(); // Begin listening on page load
+    });
+  </script>
+</body>
+</html>
